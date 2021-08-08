@@ -4,7 +4,6 @@ const cors = require("cors");
 const PORT = process.env.PORT || 3001;
 const app = express();
 const http = require("http").createServer(app);
-const TestGame = require("./Games/TestGame");
 const DrawTheWord = require("./Games/DrawTheWord");
 const EnigmaBreaker = require("./Games/EnigmaBreaker/EnigmaBreaker");
 const { makeid } = require("./makeid");
@@ -83,7 +82,7 @@ io.on("connection", (socket) => {
     //When Making a game, the game must be added to the list below for its creation with its matching ID.
     //Create a new game object for the selected game, and call its start game function.
     switch (data.gameId) {
-      case 1:
+      case 2:
         games[roomCode] = new DrawTheWord(roomCode, socket, io, data.name, data.minPlayers );
         /**
          * Notify the new game object that its been started.
@@ -95,7 +94,7 @@ io.on("connection", (socket) => {
           socket.emit("start-game", {}); // informs App.js to render game component.
         }
         break;
-      case 2:
+      case 1:
         games[roomCode] = new EnigmaBreaker(roomCode, socket, io, [data.name], data.minPlayers);
         break;
       default:

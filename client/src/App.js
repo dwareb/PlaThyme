@@ -10,10 +10,8 @@ import logo from './images/plathyme.png';
 
 import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
 import DrawTheWord from './Games/DrawTheWord/DrawTheWord';
-import TestGame from './Games/TestGame/TestGame';
 
 import './App.css';
-import { TruckIcon } from '@heroicons/react/solid';
 
 
 const SERVER = "https://enigmabreaker.herokuapp.com";
@@ -27,9 +25,9 @@ export default function App() {
 
   // Enter the new game in this Dictionary.
   const [listofGames, setListofGames] = useState([
-    { gameId: 1, gameName: "Draw The Word", minPlayers: 3 },
-    { gameId: 2, gameName: "Enigma Breaker", minPlayers: 4 },
-    { gameId: 4, gameName: "Uno", minPlayers: 2 },
+    { gameId: 1, gameName: "Enigma Breaker", minPlayers: 4 },
+    { gameId: 2, gameName: "Draw The Word", minPlayers: 3 },
+    // { gameId: 4, gameName: "Uno", minPlayers: 2 },
   ]);
 
   // Game and player Info
@@ -117,12 +115,12 @@ export default function App() {
 
   const renderGame = (gameId) => {
     switch(gameId){
-      case 1:
+      case 2:
         if(startGame === true){
           return <DrawTheWord socket={socket}/>;
         }
         return <WaitRoom/>;
-      case 2:
+      case 1:
         return <EnigmaBreaker socket={socket} playerName={currentPlayer}/>;
       default:
         break;
