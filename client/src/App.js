@@ -1,21 +1,21 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { Dialog, Transition } from "@headlessui/react";
 import io from "socket.io-client";
 
-import Carousel from './components/Carousel';
-import SelectGame from './components/SelectGame';
-import GameRoom from './components/GameRoom';
-import WaitRoom from './components/WaitRoom';
-import logo from './images/plathyme.png';
+import Carousel from "./components/Carousel";
+import SelectGame from "./components/SelectGame";
+import GameRoom from "./components/GameRoom";
+import WaitRoom from "./components/WaitRoom";
+import logo from "./images/plathyme.png";
 
-import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
-import DrawTheWord from './Games/DrawTheWord/DrawTheWord';
-import TestGame from './Games/TestGame/TestGame';
-import UNOTM from './Games/UNOtm/UNOtm';
+import EnigmaBreaker from "./Games/EnigmaBreaker/EnigmaBreaker";
+import DrawTheWord from "./Games/DrawTheWord/DrawTheWord";
+import TestGame from "./Games/TestGame/TestGame";
+import UNOTM from "./Games/UNOtm/UNOtm";
 
-import './App.css';
-import { TruckIcon } from '@heroicons/react/solid';
-
+import "./App.css";
+import { TruckIcon } from "@heroicons/react/solid";
 
 const SERVER = "http://localhost:3001";
 let socket;
@@ -24,7 +24,6 @@ let dialogText;
 let buttonText;
 
 export default function App() {
-
   // Enter the new game in this Dictionary.
   const [listofGames, setListofGames] = useState([
     { gameId: 1, gameName: "Draw The Word", minPlayers: 3 },
@@ -47,7 +46,7 @@ export default function App() {
   const [carSelect, setCarSelect] = useState(0);
 
   useEffect(() => {
-    const openModal = () =>  setIsOpen(true);
+    const openModal = () => setIsOpen(true);
 
     // Socket Connection
     socket = io(SERVER);
@@ -58,10 +57,15 @@ export default function App() {
       const name = listofGames.find(
         (id) => id.gameId === gameData.gameId
       ).gameName;
-      if(gameData.gameId === 4){
+      if (gameData.gameId === 4) {
         setDisplayPlayersList(false);
       }
-      setGameInfo({ gameName: name, minPlayers: gameData.minPlayers, roomCode: gameData.code, gameId:gameData.gameId});
+      setGameInfo({
+        gameName: name,
+        minPlayers: gameData.minPlayers,
+        roomCode: gameData.code,
+        gameId: gameData.gameId,
+      });
       setInGame(true);
     });
 
@@ -82,59 +86,60 @@ export default function App() {
     });
 
     // Component DidUnmount, clear setup.
-    return () => {  
+    return () => {
       socket.emit("disconnect");
       socket.off();
-    }
+    };
   }, [SERVER]);
 
   // broadcast message to all players
   useEffect(() => {
-      socket.on("update-game", (data) => {
-        if(data.event === "start-game"){
-          setStartGame(true);
-        }
-      })
+    socket.on("update-game", (data) => {
+      if (data.event === "start-game") {
+        setStartGame(true);
+      }
+    });
 
-      socket.on("GameRoomFullAlert", () => {
-        title = "Room Full";
-        dialogText = "The room you are trying to enter is already full. Try creating another room.";
-        buttonText = "ok";
-        setIsOpen(true);
-      })
+    socket.on("GameRoomFullAlert", () => {
+      title = "Room Full";
+      dialogText =
+        "The room you are trying to enter is already full. Try creating another room.";
+      buttonText = "ok";
+      setIsOpen(true);
+    });
   }, []);
 
   const closeModal = () => setIsOpen(false);
 
   const handleCreateGame = (playerName, selectedGame) => {
-    let truncName = playerName.slice(0,19);
+    let truncName = playerName.slice(0, 19);
     setCurrentPlayer(truncName);
     const id = selectedGame.gameId;
-    socket.emit("newRoom", { 
-      name: truncName, 
-      gameId: id, 
-      minPlayers:  selectedGame.minPlayers
+    socket.emit("newRoom", {
+      name: truncName,
+      gameId: id,
+      minPlayers: selectedGame.minPlayers,
     });
-  }
+  };
 
   const handleJoinGame = (playerName, roomCode) => {
-    let truncName = playerName.slice(0,19);
+    let truncName = playerName.slice(0, 19);
     setCurrentPlayer(truncName);
-    socket.emit("joinGame", { 
-      name: truncName, 
-      roomCode: roomCode 
+    socket.emit("joinGame", {
+      name: truncName,
+      roomCode: roomCode,
     });
-  }
+  };
 
   const renderGame = (gameId) => {
-    switch(gameId){
+    switch (gameId) {
       case 1:
-        if(startGame === true){
-          return <DrawTheWord socket={socket}/>;
+        if (startGame === true) {
+          return <DrawTheWord socket={socket} />;
         }
-        return <WaitRoom/>;
+        return <WaitRoom />;
       case 2:
-       return <EnigmaBreaker socket={socket} playerName={currentPlayer}/>;
+        return <EnigmaBreaker socket={socket} playerName={currentPlayer} />;
       case 3:
         break;
       case 4:
@@ -144,93 +149,98 @@ export default function App() {
         break;
     }
     return <></>;
-  }
+  };
 
   return (
-    <div className="App font-mono bg-thyme-darkest">
-
-      {/** Game Room of Selected Game */}
-      {inGame ? (
-          <GameRoom
-            gameInfo={gameInfo}
-            currentPlayer={currentPlayer}
-            leaveGame={setInGame}
-            socket={socket}
-            displayPlayersList={displayPlayersList}
-          >
-            { 
-              renderGame(gameInfo.gameId)
-            }
-          </GameRoom>
-      ) 
-      : 
-      // Landing page for user to select Game from dropdown 
-      (
-        <div className="App font-mono bg-thyme-darkest h-screen">
-          <img src={logo} alt="PlaThyme" className="w-80 block m-auto"></img>
-          <SelectGame
-            listofGames={listofGames}
-            createGame={handleCreateGame}
-            joinGame={handleJoinGame}
-            setSelectedGame={setCarSelect}
-          />
-          <Carousel selectedGame={carSelect}/>
-        </div>
-      )}
-     
-
-      {/** modal Dialog, will be displayed when any error occured */}
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-10 overflow-y-auto"
-          onClose={closeModal}
-        >
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child as={Fragment}>
-              <Dialog.Overlay className="fixed inset-0" />
-            </Transition.Child> 
-
-            <span
-              className="inline-block h-screen align-middle"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-200"
-              enterFrom="opacity-0 scale-50"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-50"
-            >
-              <div className="inline-block max-w-md p-4 my-5 overflow-hidden text-left align-middle transition-all transform bg-thyme-700 shadow-md rounded-lg">
-                <Dialog.Title
-                  as="h3"
-                  className="text-lg font-medium leading-6 text-thyme-300"
-                >
-                  {title}
-                </Dialog.Title>
-                <div className="mt-2">
-                  <p className="text-md text-thyme-100">{dialogText}</p>
-                </div>
-
-                <div className="mt-4 w-full flex">
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium shadow-md text-thyme-900 bg-thyme-100 rounded-md hover:bg-thyme-200"
-                    onClick={closeModal}
-                  >
-                    {buttonText}
-                  </button>
-                </div>
+    <Router>
+        <Route path="/enigma">
+          <div>HOLY MOLEY</div>
+        </Route>
+        <Route path="/" exact="true">
+          <div className="App font-mono bg-thyme-darkest">
+            {/** Game Room of Selected Game */}
+            {inGame ? (
+              <GameRoom
+                gameInfo={gameInfo}
+                currentPlayer={currentPlayer}
+                leaveGame={setInGame}
+                socket={socket}
+                displayPlayersList={displayPlayersList}
+              >
+                {renderGame(gameInfo.gameId)}
+              </GameRoom>
+            ) : (
+              // Landing page for user to select Game from dropdown
+              <div className="App font-mono bg-thyme-darkest h-screen">
+                <img
+                  src={logo}
+                  alt="PlaThyme"
+                  className="w-80 block m-auto"
+                ></img>
+                <SelectGame
+                  listofGames={listofGames}
+                  createGame={handleCreateGame}
+                  joinGame={handleJoinGame}
+                  setSelectedGame={setCarSelect}
+                />
+                <Carousel selectedGame={carSelect} />
               </div>
-            </Transition.Child>
+            )}
+
+            {/** modal Dialog, will be displayed when any error occured */}
+            <Transition appear show={isOpen} as={Fragment}>
+              <Dialog
+                as="div"
+                className="fixed inset-0 z-10 overflow-y-auto"
+                onClose={closeModal}
+              >
+                <div className="min-h-screen px-4 text-center">
+                  <Transition.Child as={Fragment}>
+                    <Dialog.Overlay className="fixed inset-0" />
+                  </Transition.Child>
+
+                  <span
+                    className="inline-block h-screen align-middle"
+                    aria-hidden="true"
+                  >
+                    &#8203;
+                  </span>
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-200"
+                    enterFrom="opacity-0 scale-50"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-50"
+                  >
+                    <div className="inline-block max-w-md p-4 my-5 overflow-hidden text-left align-middle transition-all transform bg-thyme-700 shadow-md rounded-lg">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-thyme-300"
+                      >
+                        {title}
+                      </Dialog.Title>
+                      <div className="mt-2">
+                        <p className="text-md text-thyme-100">{dialogText}</p>
+                      </div>
+
+                      <div className="mt-4 w-full flex">
+                        <button
+                          type="button"
+                          className="px-4 py-2 text-sm font-medium shadow-md text-thyme-900 bg-thyme-100 rounded-md hover:bg-thyme-200"
+                          onClick={closeModal}
+                        >
+                          {buttonText}
+                        </button>
+                      </div>
+                    </div>
+                  </Transition.Child>
+                </div>
+              </Dialog>
+            </Transition>
           </div>
-        </Dialog>
-      </Transition>
-    </div>
+        </Route>
+    </Router>
   );
 }

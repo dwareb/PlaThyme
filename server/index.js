@@ -253,3 +253,8 @@ http.listen(PORT, () => {
 
 //Default routing path.
 app.use(express.static(path.resolve(__dirname, "../client/build")));
+
+//All other routing paths
+app.get('*', (req,res) =>{
+    res.sendFile(path.join(__dirname,'../client/build/index.html'));
+});

@@ -15,6 +15,7 @@ import "./DrawingBoardStyles.css";
  */
 export default function DrawingBoard({ socket }) {
   const [myTurn, setMyTurn] = useState(false);
+  const myTurnRef = useRef(myTurn);
   const [isOpen, setIsOpen] = useState(false);
   const [blankWord, setBlankWord] = useState("");
   const [selectedWord, setSelectedWord] = useState("");
@@ -66,6 +67,10 @@ export default function DrawingBoard({ socket }) {
     }
     return () => clearInterval(interval);
   }, [turnStarted, countDown]);
+
+  useEffect(() => {
+    myTurnRef.current = myTurn;
+  })
 
   /** Game updates sent only to this client */
   useEffect(() => {
@@ -133,7 +138,7 @@ export default function DrawingBoard({ socket }) {
     canvas.height = parseInt(sketch_style.getPropertyValue("height"));
 
     const onPaint = () => {
-      if (myTurn) {
+      if (myTurnRef.current) {
         ctx.beginPath();
         ctx.moveTo(last_mouse.x, last_mouse.y);
         ctx.lineTo(mouse.x, mouse.y);
@@ -157,7 +162,7 @@ export default function DrawingBoard({ socket }) {
       }
     };
 
-    if (myTurn) {
+    if (myTurnRef.current) {
       var colors = document.getElementsByClassName("color");
       var svgPencil = document.getElementById("svgPencil");
       var svgEraser = document.getElementById("svgEraser");
@@ -213,7 +218,7 @@ export default function DrawingBoard({ socket }) {
       canvas.addEventListener("mousedown", mouseDownAddEvent, false);
       canvas.addEventListener("mouseup", mouseUpAddEvent, false);
     }
-  }, [myTurn]);
+  },[myTurn]);
 
   /** Handle functions for "Draw the word" Game */
   const handleOutOfTime = () => {
