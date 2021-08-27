@@ -28,7 +28,7 @@ export default function App() {
   const [listofGames, setListofGames] = useState([
     { gameId: 1, gameName: "Draw The Word", minPlayers: 3 },
     { gameId: 2, gameName: "Enigma Breaker", minPlayers: 4 },
-    { gameId: 4, gameName: "The Card game - Mattle UNO™", minPlayers: 2 },
+    { gameId: 3, gameName: "U-Know It", minPlayers: 2 },
   ]);
 
   // Game and player Info
@@ -134,17 +134,20 @@ export default function App() {
   const renderGame = (gameId) => {
     switch (gameId) {
       case 1:
+<<<<<<< HEAD
         if (startGame === true) {
           return <DrawTheWord socket={socket} />;
         }
         return <WaitRoom />;
+=======
+        return <DrawTheWord socket={socket}/>;
+>>>>>>> 6684339efdde7ae833cea0fd47c713fe6a39be42
       case 2:
         return <EnigmaBreaker socket={socket} playerName={currentPlayer} />;
       case 3:
-        break;
+        return <UKnowIt socket={socket} />;
       case 4:
-        console.log("inside APP");
-        return <UNOTM socket={socket} />;
+        break;
       default:
         break;
     }
