@@ -3,19 +3,16 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { Dialog, Transition } from "@headlessui/react";
 import io from "socket.io-client";
 
-import Carousel from "./components/Carousel";
-import SelectGame from "./components/SelectGame";
-import GameRoom from "./components/GameRoom";
-import WaitRoom from "./components/WaitRoom";
-import logo from "./images/plathyme.png";
+import Carousel from './components/Carousel';
+import SelectGame from './components/SelectGame';
+import GameRoom from './components/GameRoom';
+import logo from './images/plathyme.png';
 
-import EnigmaBreaker from "./Games/EnigmaBreaker/EnigmaBreaker";
-import DrawTheWord from "./Games/DrawTheWord/DrawTheWord";
-import TestGame from "./Games/TestGame/TestGame";
-import UNOTM from "./Games/UNOtm/UNOtm";
+import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
+import DrawTheWord from './Games/DrawTheWord/DrawTheWord';
+import UKnowIt from './Games/UKnowIt/UKnowIt';
 
-import "./App.css";
-import { TruckIcon } from "@heroicons/react/solid";
+import './App.css';
 
 const SERVER = "http://localhost:3001";
 let socket;
@@ -134,14 +131,7 @@ export default function App() {
   const renderGame = (gameId) => {
     switch (gameId) {
       case 1:
-<<<<<<< HEAD
-        if (startGame === true) {
-          return <DrawTheWord socket={socket} />;
-        }
-        return <WaitRoom />;
-=======
         return <DrawTheWord socket={socket}/>;
->>>>>>> 6684339efdde7ae833cea0fd47c713fe6a39be42
       case 2:
         return <EnigmaBreaker socket={socket} playerName={currentPlayer} />;
       case 3:
