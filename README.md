@@ -49,7 +49,7 @@ We are planning to do this in `2 steps`.
 
 ![DeawTheWord Game](https://github.com/PlaThyme/PlaThyme/blob/main/client/src/images/drawing.gif)
 
-## [Enigma Breake](https://github.com/PlaThyme/PlaThyme/tree/main/client/src/Games/EnigmaBreaker)
+## [Enigma Breaker](https://github.com/PlaThyme/PlaThyme/tree/main/client/src/Games/EnigmaBreaker)
 
 ![Enigma Breake Game](https://github.com/PlaThyme/PlaThyme/blob/main/client/src/images/notfound.gif)
 
