@@ -12,7 +12,6 @@ const GameRoom = ({
   leaveGame,
   socket,
   children,
-  displayPlayersList,
 }) => {
   const [allUsers, setAllUsers] = useState([]);
   const [messages, setMessages] = useState([]);

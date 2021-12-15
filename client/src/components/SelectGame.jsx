@@ -35,7 +35,11 @@ export default function SelectGame({ listofGames, createGame, joinGame, setSelec
   };
   const handeJoinExistingRoom = (e) => {
     e.preventDefault();
-    joinGame(nameRef.current.value, codeRef.current.value);
+    if (selected.gameId === 0) {
+      openModal();
+      return;
+    }
+    joinGame(nameRef.current.value, codeRef.current.value, selected);
   };
 
   return (
@@ -185,7 +189,7 @@ export default function SelectGame({ listofGames, createGame, joinGame, setSelec
           }
           onClick={handleJoinRoom}
         >
-          Join Room
+          Join Room / Custom Room
         </button>
       </div>
       {/* 1. Create Room Form  */}
@@ -234,6 +238,7 @@ export default function SelectGame({ listofGames, createGame, joinGame, setSelec
                 name="name"
                 placeholder="Enter Room Code"
                 autoComplete="off"
+                maxLength="20"
                 className="border border-gray-300 shadow p-2 w-full"
                 ref={codeRef}
                 required
