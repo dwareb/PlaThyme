@@ -62,6 +62,7 @@ const GameRoom = ({
   const handleLeaveGame = () => {
     socket.emit("leaveGame");
     leaveGame(false);
+    history.push("/");
   };
 
   const closeModal = () => {
