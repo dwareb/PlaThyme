@@ -16,7 +16,7 @@ import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
 
 import './App.css';
 
-const SERVER = "http://localhost:3001";
+const SERVER = "https://enigmabreaker.herokuapp.com/";
 let socket = io(SERVER)
 
 export default function App() {
