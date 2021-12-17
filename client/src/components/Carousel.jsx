@@ -1,16 +1,16 @@
 import React from 'react'; 
 import { useEffect } from 'react';
 
-import demo2 from "../images/drawing.gif";
-import demo1 from "../images/notfound.gif";
-// import demo3 from "../images/eb.PNG";
+import demo1 from "../images/drawing.gif";
+import demo2 from "../images/notfound.gif";
+import demo3 from "../images/UKnowIt.gif";
 
 import "./Carousel.css";
 
 const images = [
   demo1,
   demo2,
-  // demo3,
+  demo3,
 ];
 
 const Carousel = ({selectedGame}) => {

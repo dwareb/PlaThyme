@@ -4,7 +4,6 @@ const cors = require("cors");
 const PORT = process.env.PORT || 3001;
 const app = express();
 const http = require("http").createServer(app);
-const DrawTheWord = require("./Games/DrawTheWord");
 const EnigmaBreaker = require("./Games/EnigmaBreaker/EnigmaBreaker");
 const { makeid } = require("./makeid");
 const {
@@ -14,13 +13,13 @@ const {
   getGameId,
   numUsersInRoom,
   getUsersInRoom,
+  getUserByNameAndCode,
 } = require("./rooms.js");
 
 //games is a dict of the game state objects, indexed bt the roomCode.
 const games = {};
-
 //Get sockets running
-const io = require("socket.io")(http, {cors:{origin:'*'}});
+const io = require("socket.io")(http, { cors: { origin: "*" } });
 app.use(cors());
 
 //Handle all events related to a socket connection.
@@ -29,14 +28,19 @@ io.on("connection", (socket) => {
 
   //Socket events to handle the various events.
   socket.on("newRoom", (data) => handleCreateGame(data));
-  socket.on("leaveRoom", () => {try{leaveRoom(socket.id)} catch (error){console.error(error);}});
+  socket.on("leaveRoom", () => {
+    try {
+      leaveRoom(socket.id);
+    } catch (error) {
+      console.error(error);
+    }
+  });
   socket.on("messageSend", (message) => handleMessageSend(message));
   socket.on("leaveGame", () => handleDisconnect());
   socket.on("disconnect", () => handleDisconnect());
-  socket.on("joinGame", ({ name, roomCode }) => handleJoinGame({ name, roomCode }));
+  socket.on("joinGame", (data) => handleJoinGame(data));
   socket.on("game-data", (data) => {
-    try{
-
+    try {
       if (getUser(socket.id)) {
         games[getUser(socket.id).roomCode].recieveData(data);
       }
@@ -44,20 +48,25 @@ io.on("connection", (socket) => {
       console.error(error);
     }
   });
-  
+
   //Below are the functions to to handle the socket.on events.
-  
+
   //New game greation.
   const handleCreateGame = (data) => {
     //Generate a random room code.
-    roomCode = makeid(6);
+    let newRoom = true;
+    if (data.roomCode === undefined) {
+      roomCode = makeid(6);
 
-    //Check if the random ID was a repeat. If so, recursively attempt again.
-    if (numUsersInRoom(roomCode) > 0) {
-      handleCreateGame(data);
-      return;
+      //Check if the random ID was a repeat. If so, recursively attempt again.
+      if (numUsersInRoom(roomCode) > 0) {
+        handleCreateGame(data);
+        return;
+      }
+    } else {
+      newRoom = false;
+      roomCode = data.roomCode;
     }
-
     //Build the data to be sent out to the client.
     const gameData = {
       playerName: data.name,
@@ -82,21 +91,16 @@ io.on("connection", (socket) => {
     //When Making a game, the game must be added to the list below for its creation with its matching ID.
     //Create a new game object for the selected game, and call its start game function.
     switch (data.gameId) {
-      case 2:
-        games[roomCode] = new DrawTheWord(roomCode, socket, io, data.name, data.minPlayers );
-        /**
-         * Notify the new game object that its been started.
-         * "DrawTheWord" game has a "waitingRoom". (the game will not start till all the minimum players join the `GameRoom`),
-         * events related to that are implemented within startGame() within game logic file (DrawTheWord.js).
-         * */
-        if (games[roomCode].players.length === games[roomCode].minPlayers) {
-          games[roomCode].startGame();
-          socket.emit("start-game", {}); // informs App.js to render game component.
-        }
+      case 1: // EnigmaBreaker
+        games[roomCode] = new EnigmaBreaker(
+          roomCode,
+          socket,
+          io,
+          [data.name],
+          data.minPlayers
+        );
         break;
-      case 1:
-        games[roomCode] = new EnigmaBreaker(roomCode, socket, io, [data.name], data.minPlayers);
-        break;
+
       default:
         break;
     }
@@ -106,13 +110,17 @@ io.on("connection", (socket) => {
   };
 
   //Join a client to an existing game
-  const handleJoinGame = ({ name, roomCode }) => {
+  const handleJoinGame = (data) => {
     try {
-      const gid = getGameId(roomCode);
-
+      const gid = getGameId(data.roomCode);
+      const userId = socket.id;
       //Make sure game room exists.
-      if (gid === null || games[roomCode] === undefined) {
-        socket.emit("error", { error: "gid" });
+      // if (gid === null || games[roomCode] === undefined) {
+      //   socket.emit("error", { error: "gid" });
+      //   return;
+      // }
+      if (games[data.roomCode] === undefined) {
+        handleCreateGame(data);
         return;
       }
 
@@ -120,8 +128,8 @@ io.on("connection", (socket) => {
       let error = joinRoom({
         id: socket.id,
         gameId: gid,
-        name: name,
-        roomCode: roomCode,
+        name: data.name,
+        roomCode: data.roomCode,
         score: 0,
       });
 
@@ -133,26 +141,40 @@ io.on("connection", (socket) => {
 
       //If the user name is valid, join the player to the room, aand
       if (error.error !== "dup" && error.error !== "dup") {
-        socket.broadcast.to(roomCode).emit("message", {
+        socket.broadcast.to(data.roomCode).emit("message", {
           sender: "",
-          text: `"${name}" has joined the game.`,
+          text: `"${data.name}" has joined the game.`,
         });
 
         //Broadcast the game information to the client who just joined the game, and join them to the roomCode socket channel.
-        const gameData = { playerName: name, code: roomCode, gameId: gid };
+        const gameData = {
+          playerName: data.name,
+          code: data.roomCode,
+          gameId: gid,
+        };
+        games[data.roomCode].newPlayer(data.name);
         socket.emit("gameData", gameData);
-        socket.join(roomCode);
+        socket.join(data.roomCode);
 
         //Notify the game object that a new player has joined.
         // Test: enter wrong room code; got error. (add checks)
-        games[roomCode].newPlayer(name);
+        // switch(gid){
+        //   case 3: // UKnowIt
+        //     if(games[data.roomCode].players.length === games[data.roomCode].minPlayers){
+        //         games[data.roomCode].startGame();
+        //       }
+        //       else {
+        //         // send an error event indicating thta current room is full and redireect them to home page agin.
+        //         io.to(userId).emit("GameRoomFullAlert");
+        //       }
+        //   break;
 
-        if ( games[roomCode].players.length >= games[roomCode].minPlayers && gid === 1) {
-          games[roomCode].startGame();
-        }
+        //   default:
+        //     break;
+        // }
 
         //Send all players updated user list.
-        io.to(roomCode).emit("userData", getUsersInRoom(roomCode));
+        io.to(data.roomCode).emit("userData", getUsersInRoom(data.roomCode));
       }
     } catch (error) {
       console.error(error);
@@ -161,6 +183,7 @@ io.on("connection", (socket) => {
 
   //Perform client disconnection actions
   const handleDisconnect = () => {
+    console.log("Client Disconnected");
     try {
       //Remove the user from room tracking, and socket.
       const userName = leaveRoom(socket.id);
@@ -178,10 +201,13 @@ io.on("connection", (socket) => {
           "userData",
           getUsersInRoom(userName.roomCode)
         );
+        io.to(userName.roomCode).emit("playerLeft", {
+          leftPlayerName: userName.name,
+        });
         //Notify game object that the player has left, if the game exists.
         if (games[userName.roomCode]) {
           games[userName.roomCode].disconnection(userName.name);
-          if (numUsersInRoom(userName.roomCode === 0)) {
+          if (numUsersInRoom(userName.roomCode) === 0) {
             delete games[userName.roomCode];
           }
         }
@@ -219,3 +245,8 @@ http.listen(PORT, () => {
 
 //Default routing path.
 app.use(express.static(path.resolve(__dirname, "../client/build")));
+
+//All other routing paths
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});

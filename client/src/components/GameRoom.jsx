@@ -2,27 +2,67 @@ import { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import "./GameRoom.css";
 import io from "socket.io-client";
+import { useParams, useHistory} from "react-router-dom";
 
 import ToolTip from "./ToolTip";
 import Chat from "./Chat";
 
-const GameRoom = ({ gameInfo, currentPlayer, leaveGame, socket, children }) => {
+const GameRoom = ({
+  gameInfo,
+  currentPlayer,
+  leaveGame,
+  socket,
+  children,
+  listofGames,
+  setGameInfo,
+  setCurrentPlayer,
+}) => {
   const [allUsers, setAllUsers] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  let {game} = useParams();
+  let {roomid} = useParams();
+  let history = useHistory();
 
   useEffect(() => {
+    // Socket events
     socket.on("userData", (users) => {
       setAllUsers(users);
     });
+
     socket.on("message", (message) => {
       setMessages((messages) => [...messages, message]);
     });
+
+    socket.on("gameData", (gameData) => {
+      const name = listofGames.find(
+        (id) => id.gameId === gameData.gameId
+      ).gameName;
+      setGameInfo({
+        gameName: name,
+        minPlayers: gameData.minPlayers,
+        roomCode: gameData.code,
+        gameId: gameData.gameId,
+      });
+      let gName;
+      for (let g of listofGames) {
+        if (g.gameId === gameData.gameId) {
+          gName = g.urlName;
+        }
+      }
+      history.push("/" + gName + "/" + gameData.code);
+    });
+    return () => {
+      socket.emit("leaveGame");
+    };
   }, []);
+  
+
 
   const handleLeaveGame = () => {
     socket.emit("leaveGame");
     leaveGame(false);
+    history.push("/");
   };
 
   const closeModal = () => {
@@ -59,7 +99,10 @@ const GameRoom = ({ gameInfo, currentPlayer, leaveGame, socket, children }) => {
             <div className="text-center bg-thyme">PLAYERS</div>
             <ul className="flex-col bg-gray-900 divide-y-4 divide-thyme divide-dashed content-center">
               {allUsers.map((player) => (
-                <h1 className="text-xl text-center align-middle bg-gray-900 text-thyme-lightest p-2">
+                <h1
+                  className="text-xl text-center align-middle bg-gray-900 text-thyme-lightest p-2"
+                  key={player.name}
+                >
                   {player.name} : {player.score}
                 </h1>
               ))}

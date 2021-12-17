@@ -1,3 +1,5 @@
+//To keep the game js cleaner, the complete word list is held here. To add words, they simply need to be added to the list, no other changes needed.
+
 wordsList = [
   "SWORD",
   "TRUMPET",
@@ -282,7 +284,7 @@ wordsList = [
   "CLOWN",
   "CROWN",
   "PIT",
-  "MAMAL",
+  "MAMMAL",
   "SUBMARINE",
   "NUCLEAR",
   "SLAUGHTER",

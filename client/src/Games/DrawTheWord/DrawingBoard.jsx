@@ -1,8 +1,3 @@
-/**
- * @Resources
- * https://dev.to/jerrymcdonald/creating-a-shareable-whiteboard-with-canvas-socket-io-and-react-2en
- * https://stackoverflow.com/questions/2368784/draw-on-html5-canvas-using-a-mouse
- */
 import React, { useState, useEffect, useRef, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -15,13 +10,14 @@ import "./DrawingBoardStyles.css";
  */
 export default function DrawingBoard({ socket }) {
   const [myTurn, setMyTurn] = useState(false);
+  const myTurnRef = useRef(myTurn);
   const [isOpen, setIsOpen] = useState(false);
   const [blankWord, setBlankWord] = useState("");
   const [selectedWord, setSelectedWord] = useState("");
   const [wordOptions, setWordOptions] = useState(["", "", ""]);
   const [countDown, setCountDown] = useState(0);
   const [turnStarted, setTurnStarted] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("Waiting For Players");
 
   const colorsRef = useRef(null);
   const colourPalletDict = {
@@ -67,6 +63,10 @@ export default function DrawingBoard({ socket }) {
     return () => clearInterval(interval);
   }, [turnStarted, countDown]);
 
+  useEffect(() => {
+    myTurnRef.current = myTurn;
+  })
+
   /** Game updates sent only to this client */
   useEffect(() => {
     socket.on("update-game-player", (data) => {
@@ -83,7 +83,9 @@ export default function DrawingBoard({ socket }) {
     socket.on("update-game", (data) => {
       var canvas = document.querySelector("#board");
       var ctx = canvas.getContext("2d");
-
+      if (data.event === "start-game"){
+        setStatusMessage("Get ready! Waiting on word selection.");
+      }
       // Canvas data that user draws on whiteboard.
       if (data.event === "canvas-data") {
         var image = new Image();
@@ -117,7 +119,7 @@ export default function DrawingBoard({ socket }) {
       }
     });
   }, []);
-  
+
   // Logic for drawing on canvas.
   useEffect(() => {
     var canvas = document.querySelector("#board");
@@ -128,12 +130,12 @@ export default function DrawingBoard({ socket }) {
     var last_mouse = { x: 0, y: 0 };
     var strokeColor = "#00000000";
     let timeoutValue;
-    
+
     canvas.width = parseInt(sketch_style.getPropertyValue("width"));
     canvas.height = parseInt(sketch_style.getPropertyValue("height"));
 
     const onPaint = () => {
-      if (myTurn) {
+      if (myTurnRef.current) {
         ctx.beginPath();
         ctx.moveTo(last_mouse.x, last_mouse.y);
         ctx.lineTo(mouse.x, mouse.y);
@@ -157,7 +159,7 @@ export default function DrawingBoard({ socket }) {
       }
     };
 
-    if (myTurn) {
+    if (myTurnRef.current) {
       var colors = document.getElementsByClassName("color");
       var svgPencil = document.getElementById("svgPencil");
       var svgEraser = document.getElementById("svgEraser");
@@ -213,7 +215,7 @@ export default function DrawingBoard({ socket }) {
       canvas.addEventListener("mousedown", mouseDownAddEvent, false);
       canvas.addEventListener("mouseup", mouseUpAddEvent, false);
     }
-  }, [myTurn]);
+  },[myTurn]);
 
   /** Handle functions for "Draw the word" Game */
   const handleOutOfTime = () => {
@@ -229,7 +231,6 @@ export default function DrawingBoard({ socket }) {
   const handleWordSelect = (word, time, difficulty) => {
     setSelectedWord(word);
     closeModal();
-    console.log("in frontend emit --> ", word, word.length);
     socket.emit("game-data", {
       event: "word-selection",
       word: word,
