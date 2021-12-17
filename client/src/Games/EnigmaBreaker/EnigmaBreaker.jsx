@@ -867,14 +867,14 @@ const EnigmaBreaker = ({ socket, playerName }) => {
   //This is what actually renders the element.
   return (
     <div>
-      <audio id="print1" src={print1} crossorigin="anonymous"></audio>
-      <audio id="print2" src={print2} crossorigin="anonymous"></audio>
-      <audio id="print3" src={print3} crossorigin="anonymous"></audio>
-      <audio id="print4" src={print4} crossorigin="anonymous"></audio>
-      <audio id="print5" src={print5} crossorigin="anonymous"></audio>
-      <audio id="print6" src={print6} crossorigin="anonymous"></audio>
-      <audio id="print7" src={print7} crossorigin="anonymous"></audio>
-      <audio id="print8" src={print8} crossorigin="anonymous"></audio>
+      <audio id="print1" src={print1} crossOrigin="anonymous"></audio>
+      <audio id="print2" src={print2} crossOrigin="anonymous"></audio>
+      <audio id="print3" src={print3} crossOrigin="anonymous"></audio>
+      <audio id="print4" src={print4} crossOrigin="anonymous"></audio>
+      <audio id="print5" src={print5} crossOrigin="anonymous"></audio>
+      <audio id="print6" src={print6} crossOrigin="anonymous"></audio>
+      <audio id="print7" src={print7} crossOrigin="anonymous"></audio>
+      <audio id="print8" src={print8} crossOrigin="anonymous"></audio>
 
       <div className={`${myTeam}-screen-text float-left`}>
         <button onClick={toggleSound}>
@@ -1023,7 +1023,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="red-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={r1HintRef}
                         />
                       ) : (
@@ -1040,7 +1040,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="red-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={r2HintRef}
                         />
                       ) : (
@@ -1057,7 +1057,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="red-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={r3HintRef}
                           gfd
                         />
@@ -1150,9 +1150,9 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                             type="text"
                             placeholder="team chat here"
                             required
-                            maxlength="60"
+                            maxLength="60"
                             ref={chatRef}
-                            autocomplete="off"
+                            autoComplete="off"
                             className={`${myTeam}-input w-full px-1`}
                           />
                         </form>
@@ -1280,7 +1280,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="blue-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={b1HintRef}
                         />
                       ) : (
@@ -1297,7 +1297,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="blue-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={b2HintRef}
                         />
                       ) : (
@@ -1314,7 +1314,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                           className="blue-input"
                           type="text"
                           placeholder="Hint goes here"
-                          maxlength="42"
+                          maxLength="42"
                           ref={b3HintRef}
                           gfd
                         />
@@ -1405,9 +1405,9 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                             type="text"
                             placeholder="team chat here"
                             required
-                            maxlength="60"
+                            maxLength="60"
                             ref={chatRef}
-                            autocomplete="off"
+                            autoComplete="off"
                             className={`${myTeam}-input w-full px-1`}
                           />
                         </form>
@@ -1469,7 +1469,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
           </div>
         </div>
 
-        <div classname="history-lists bg-red-900">
+        <div className="history-lists">
           <div className="printer" id="printer">
             <div className="paper"></div>
           </div>

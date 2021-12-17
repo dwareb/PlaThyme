@@ -8,6 +8,7 @@ import io from "socket.io-client";
 import GameRoom from './components/GameRoom';
 // import logo from './images/plathyme.png';
 import LandingPage from './components/LandingPage';
+import Login from "./components/Login";
 
 import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
 // import DrawTheWord from './Games/DrawTheWord/DrawTheWord';
@@ -47,13 +48,24 @@ export default function App() {
     };
   }, [SERVER]);
 
+  const handleJoinGame = (playerName, roomCode, selectedGame) => {
+    let truncName = playerName.slice(0, 19);
+    setCurrentPlayer(truncName);
+    socket.emit("joinGame", {
+      name: truncName,
+      roomCode: roomCode,
+      gameId: selectedGame.gameId,
+      minPlayers: selectedGame.minPlayers,
+    });
+  };
+
   // broadcast message to all players
   const renderGame = (gameId) => {
     switch (gameId) {
       case 1:
         return <EnigmaBreaker socket={socket} playerName={currentPlayer} />;
       default:
-        break;
+        return <Login listofGames={listofGames} handleJoinGame={handleJoinGame}/>
     }
     return <></>;
   };
@@ -66,11 +78,14 @@ export default function App() {
             currentPlayer={currentPlayer}
             leaveGame={setInGame}
             socket={socket}
+            listofGames={listofGames}
+            setGameInfo={setGameInfo}
+            setCurrentPlayer={setCurrentPlayer}
             >
             {renderGame(gameInfo.gameId)}
           </GameRoom>
         </Route>
-        <Route path="/" exact="true">
+        <Route path="/" exact={true}>
           <LandingPage
             socket={socket}
             setGameInfo={setGameInfo}

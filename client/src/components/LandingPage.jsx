@@ -30,8 +30,10 @@ const LandingPage = ({socket, setGameInfo, setCurrentPlayer, carSelect, setCarSe
         gameId: gameData.gameId,
       });
       let gName;
-      if (gameData.gameId == 1){
-        gName = "enigma";
+      for (let g of listofGames) {
+        if (g.gameId === gameData.gameId) {
+          gName = g.urlName;
+        }
       }
       history.push("/" + gName + "/" + gameData.code);
     });
