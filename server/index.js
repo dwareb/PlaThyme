@@ -19,7 +19,7 @@ const {
 //games is a dict of the game state objects, indexed bt the roomCode.
 const games = {};
 //Get sockets running
-const io = require("socket.io")(http, {cors:{origin:'*'}});
+const io = require("socket.io")(http, { cors: { origin: "*" } });
 app.use(cors());
 
 //Handle all events related to a socket connection.
@@ -28,14 +28,19 @@ io.on("connection", (socket) => {
 
   //Socket events to handle the various events.
   socket.on("newRoom", (data) => handleCreateGame(data));
-  socket.on("leaveRoom", () => {try{leaveRoom(socket.id)} catch (error){console.error(error);}});
+  socket.on("leaveRoom", () => {
+    try {
+      leaveRoom(socket.id);
+    } catch (error) {
+      console.error(error);
+    }
+  });
   socket.on("messageSend", (message) => handleMessageSend(message));
   socket.on("leaveGame", () => handleDisconnect());
   socket.on("disconnect", () => handleDisconnect());
   socket.on("joinGame", (data) => handleJoinGame(data));
   socket.on("game-data", (data) => {
-    try{
-
+    try {
       if (getUser(socket.id)) {
         games[getUser(socket.id).roomCode].recieveData(data);
       }
@@ -45,12 +50,12 @@ io.on("connection", (socket) => {
   });
 
   //Below are the functions to to handle the socket.on events.
-  
+
   //New game greation.
   const handleCreateGame = (data) => {
     //Generate a random room code.
     let newRoom = true;
-    if(data.roomCode === undefined){
+    if (data.roomCode === undefined) {
       roomCode = makeid(6);
 
       //Check if the random ID was a repeat. If so, recursively attempt again.
@@ -60,10 +65,8 @@ io.on("connection", (socket) => {
       }
     } else {
       newRoom = false;
-      roomCode = data.roomCode
+      roomCode = data.roomCode;
     }
-
-
     //Build the data to be sent out to the client.
     const gameData = {
       playerName: data.name,
@@ -89,7 +92,13 @@ io.on("connection", (socket) => {
     //Create a new game object for the selected game, and call its start game function.
     switch (data.gameId) {
       case 1: // EnigmaBreaker
-        games[roomCode] = new EnigmaBreaker(roomCode, socket, io, [data.name], data.minPlayers);
+        games[roomCode] = new EnigmaBreaker(
+          roomCode,
+          socket,
+          io,
+          [data.name],
+          data.minPlayers
+        );
         break;
 
       default:
@@ -105,65 +114,68 @@ io.on("connection", (socket) => {
     try {
       const gid = getGameId(data.roomCode);
       const userId = socket.id;
-        //Make sure game room exists.
-        // if (gid === null || games[roomCode] === undefined) {
-        //   socket.emit("error", { error: "gid" });
-        //   return;
-        // }
+      //Make sure game room exists.
+      // if (gid === null || games[roomCode] === undefined) {
+      //   socket.emit("error", { error: "gid" });
+      //   return;
+      // }
+      if (games[data.roomCode] === undefined) {
+        handleCreateGame(data);
+        return;
+      }
 
-        if (games[data.roomCode] === undefined) {
-          handleCreateGame(data)
-          return;
-        }
+      //Try to join the user to the room.
+      let error = joinRoom({
+        id: socket.id,
+        gameId: gid,
+        name: data.name,
+        roomCode: data.roomCode,
+        score: 0,
+      });
 
-        //Try to join the user to the room.
-        let error = joinRoom({
-          id: socket.id,
-          gameId: gid,
-          name: data.name,
-          roomCode: data.roomCode,
-          score: 0,
+      //Check for duplicate user.
+      if (error.error === "dup") {
+        socket.emit("error", { error: "dup" });
+        return;
+      }
+
+      //If the user name is valid, join the player to the room, aand
+      if (error.error !== "dup" && error.error !== "dup") {
+        socket.broadcast.to(data.roomCode).emit("message", {
+          sender: "",
+          text: `"${data.name}" has joined the game.`,
         });
 
-        //Check for duplicate user.
-        if (error.error === "dup") {
-          socket.emit("error", { error: "dup" });
-          return;
-        }
+        //Broadcast the game information to the client who just joined the game, and join them to the roomCode socket channel.
+        const gameData = {
+          playerName: data.name,
+          code: data.roomCode,
+          gameId: gid,
+        };
+        games[data.roomCode].newPlayer(data.name);
+        socket.emit("gameData", gameData);
+        socket.join(data.roomCode);
 
-        //If the user name is valid, join the player to the room, aand
-        if (error.error !== "dup" && error.error !== "dup") {
-          socket.broadcast.to(data.roomCode).emit("message", {
-            sender: "",
-            text: `"${data.name}" has joined the game.`,
-          });
+        //Notify the game object that a new player has joined.
+        // Test: enter wrong room code; got error. (add checks)
+        // switch(gid){
+        //   case 3: // UKnowIt
+        //     if(games[data.roomCode].players.length === games[data.roomCode].minPlayers){
+        //         games[data.roomCode].startGame();
+        //       }
+        //       else {
+        //         // send an error event indicating thta current room is full and redireect them to home page agin.
+        //         io.to(userId).emit("GameRoomFullAlert");
+        //       }
+        //   break;
 
-          //Broadcast the game information to the client who just joined the game, and join them to the roomCode socket channel.
-          const gameData = { playerName: data.name, code: data.roomCode, gameId: gid };
-          games[data.roomCode].newPlayer(data.name);
-          socket.emit("gameData", gameData);
-          socket.join(data.roomCode);
+        //   default:
+        //     break;
+        // }
 
-          //Notify the game object that a new player has joined.
-          // Test: enter wrong room code; got error. (add checks)
-          // switch(gid){
-          //   case 3: // UKnowIt
-          //     if(games[data.roomCode].players.length === games[data.roomCode].minPlayers){
-          //         games[data.roomCode].startGame();
-          //       } 
-          //       else {
-          //         // send an error event indicating thta current room is full and redireect them to home page agin.
-          //         io.to(userId).emit("GameRoomFullAlert");
-          //       }
-          //   break;
-
-          //   default:
-          //     break;
-          // }
-
-          //Send all players updated user list.
-          io.to(data.roomCode).emit("userData", getUsersInRoom(data.roomCode));
-        }
+        //Send all players updated user list.
+        io.to(data.roomCode).emit("userData", getUsersInRoom(data.roomCode));
+      }
     } catch (error) {
       console.error(error);
     }
@@ -171,6 +183,7 @@ io.on("connection", (socket) => {
 
   //Perform client disconnection actions
   const handleDisconnect = () => {
+    console.log("Client Disconnected");
     try {
       //Remove the user from room tracking, and socket.
       const userName = leaveRoom(socket.id);
@@ -188,14 +201,13 @@ io.on("connection", (socket) => {
           "userData",
           getUsersInRoom(userName.roomCode)
         );
-        io.to(userName.roomCode).emit("playerLeft",{
+        io.to(userName.roomCode).emit("playerLeft", {
           leftPlayerName: userName.name,
-        }
-        );
+        });
         //Notify game object that the player has left, if the game exists.
         if (games[userName.roomCode]) {
           games[userName.roomCode].disconnection(userName.name);
-          if (numUsersInRoom(userName.roomCode === 0)) {
+          if (numUsersInRoom(userName.roomCode) === 0) {
             delete games[userName.roomCode];
           }
         }
@@ -235,6 +247,6 @@ http.listen(PORT, () => {
 app.use(express.static(path.resolve(__dirname, "../client/build")));
 
 //All other routing paths
-app.get('*', (req,res) =>{
-    res.sendFile(path.join(__dirname,'../client/build/index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
