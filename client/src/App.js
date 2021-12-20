@@ -1,18 +1,13 @@
-import React, { useState, useEffect, useRef} from "react";
-import { BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
-import { Dialog, Transition } from "@headlessui/react";
+import React, { useState, useEffect} from "react";
+import { BrowserRouter as Router, Route} from "react-router-dom";
 import io from "socket.io-client";
 
-// import Carousel from './components/Carousel';
-// import SelectGame from './components/SelectGame';
 import GameRoom from './components/GameRoom';
-// import logo from './images/plathyme.png';
 import LandingPage from './components/LandingPage';
 import Login from "./components/Login";
 
 import EnigmaBreaker from './Games/EnigmaBreaker/EnigmaBreaker';
-// import DrawTheWord from './Games/DrawTheWord/DrawTheWord';
-// import UKnowIt from './Games/UKnowIt/UKnowIt';
+import Amplitude from './Games/Amplitude/Amplitude';
 
 import './App.css';
 
@@ -23,6 +18,7 @@ export default function App() {
   // Enter the new game in this Dictionary.
   const [listofGames, setListofGames] = useState([
     { gameId: 1, gameName: "Enigma Breaker", minPlayers: 4, urlName: "enigma"},
+    { gameId: 2, gameName: "Amplitude", minPlayers: 4, urlName: "amplitude"},
   ]);
 
   // Game and player Info
@@ -64,6 +60,8 @@ export default function App() {
     switch (gameId) {
       case 1:
         return <EnigmaBreaker socket={socket} playerName={currentPlayer} />;
+      case 2:
+        return <Amplitude socket={socket} playerName={currentPlayer} />;
       default:
         return <Login listofGames={listofGames} handleJoinGame={handleJoinGame}/>
     }

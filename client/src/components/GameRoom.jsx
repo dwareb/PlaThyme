@@ -1,7 +1,6 @@
 import { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import "./GameRoom.css";
-import io from "socket.io-client";
 import { useParams, useHistory} from "react-router-dom";
 
 import ToolTip from "./ToolTip";

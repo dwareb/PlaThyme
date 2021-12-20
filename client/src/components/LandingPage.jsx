@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef, Fragment} from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useHistory } from "react-router-dom";
-// import Carousel from "./Carousel";
 import SelectGame from "./SelectGame";
-import io from "socket.io-client";
 import logo from '../images/plathyme.png';
 
 let title;

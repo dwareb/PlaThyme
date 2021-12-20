@@ -1,6 +1,4 @@
-import {useState, useEffect, useRef} from 'react';
-import { PaperAirplaneIcon } from "@heroicons/react/solid";
-import io from 'socket.io-client';
+import {useRef} from 'react';
 import "./GameRoom.css";
 
 import MessageFeed from './MessageFeed';
