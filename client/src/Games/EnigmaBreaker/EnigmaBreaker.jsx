@@ -21,7 +21,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
   const [currentRound, setCurrentRound] = useState(0);
   //Ref is for event handler in use effect blocks.
   const currentRoundRef = useRef(currentRound);
-  
+
   //Tracks game state. Information on that follows
   const [gameState, setGameState] = useState(0);
   //Ref is for event handler in use effect blocks.
@@ -90,7 +90,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
   //These will show your guesses, and the results in the middle of the hints and guess portion of the screen.
   const [actualNums, setActualNums] = useState(["?", "?", "?", "?", "?", "?"]);
   const [guessResults, setGuessResults] = useState(["", "", "", "", "", ""]);
-  const [guesses, setGuesses] = useState([[],[]]);
+  const [guesses, setGuesses] = useState([[], []]);
 
   //This simply controls the join team modal.
   const [isOpen, setIsOpen] = useState(false);
@@ -111,133 +111,127 @@ const EnigmaBreaker = ({ socket, playerName }) => {
   const b3HintRef = useRef();
   const chatRef = useRef();
 
-
   //Initializes references, so they can be used inside event handlers.
   useEffect(() => {
     coderRef.current = coder;
     currentRoundRef.current = currentRound;
     myTeamRef.current = myTeam;
     gameStateRef.current = gameState;
-  })
+  });
 
   //These are all the socket events.
   useEffect(() => {
-
     //Update-game events are ones that are sent to all clients in room.
-    socket.on(
-      "update-game",
-      (data) => {
-        //Updates actual secret code numbers
-        if (data.event === "updateActuals") {
-          setActualNums(data.nums);
-          return;
-        }
-        //This event enables the game to start. When each team has 2 players, this should have been sent.
-        if (data.event === "allow-start") {
-          setButtonMessage("START GAME");
-          setActiveConfirm(true);
-          setStatusMessage(
-            "Minimum Players Reached. You can now start the game."
-          );
-          return;
-        }
-        //This is a notification that the game has been started.
-        if (data.event === "start-game") {
-          setActualNums(["?", "?", "?", "?", "?", "?"]);
-          setButtonMessage("Inactive");
-          setActiveConfirm(false);
-          setGameState(data.state);
-          return;
-        }
-
-        //This triggers a new turn. Resets much of the UI
-        if (data.event === "new-turn") {
-          handleNewTurn(data);
-          return;
-        }
-
-        //This indicates that red team has submitted their hints.
-        if (data.event === "red-hints-in") {
-          setStatusMessage(
-            "Red has encoded their transmission. Waiting on Blue Encoder to complete encryption."
-          );
-          return;
-        }
-        //This indicates that blue team has submitted their hints.
-        if (data.event === "blue-hints-in") {
-          setStatusMessage(
-            "Blue has encoded their transmission. Waiting on Red Encoder to complete encryption."
-          );
-          return;
-        }
-
-        //This indicates that players are waiting for red to submit their guesses.
-        if (data.event === "wait-red-guess") {
-          setGameState(data.state);
-          if (myTeamRef.current === "blue") {
-            setActiveConfirm(false);
-            setButtonMessage("Please Wait");
-          }
-          setStatusMessage(
-            "Blue team has decoded the transmission... Waiting for red team to finalize their decryption"
-          );
-          return;
-        }
-        //This indicates that players are waiting for blue to submit their guesses.
-        if (data.event === "wait-blue-guess") {
-          setGameState(data.state);
-          if (myTeamRef.current === "red") {
-            setActiveConfirm(false);
-            setButtonMessage("Please Wait");
-          }
-          setStatusMessage(
-            "Red team has decoded the transmission... Waiting for blue team to finalize their decryption"
-          );
-          return;
-        }
-
-        //This indicates that its time for both teams to decrypt the secret codes.
-        if (data.event === "decryption") {
-          setActiveConfirm(false);
-          handleDecryption(data);
-          return;
-        }
-
-        //This event occurs when red team drops below 2 players.
-        if (data.event === "red-needs-players") {
-          setStatusMessage(
-            "Red team no longer has enough players. Hire more agents."
-          );
-          return;
-        }
-        //This event occurs when blue team drops below 2 players.
-        if (data.event === "blue-needs-players") {
-          setStatusMessage(
-            "Blue team no longer has enough players. Hire more agents."
-          );
-          return;
-        }
-
-        //This event contains score data, and ends the round.
-        if (data.event === "score-result") {
-          handleScoreResult(data);
-        }
-
-        //Game has ended, final score and winner is indicated.
-        if (data.event === "game-over") {
-          handleGameOver(data);
-          return;
-        }
-        //Essentially resets the game back to the initial state. People will need to re-join teams.
-        if (data.event === "reset-game") {
-          handleResetGame();
-        }
+    socket.on("update-game", (data) => {
+      //Updates actual secret code numbers
+      if (data.event === "updateActuals") {
+        setActualNums(data.nums);
+        return;
       }
-    );
+      //This event enables the game to start. When each team has 2 players, this should have been sent.
+      if (data.event === "allow-start") {
+        setButtonMessage("START GAME");
+        setActiveConfirm(true);
+        setStatusMessage(
+          "Minimum Players Reached. You can now start the game."
+        );
+        return;
+      }
+      //This is a notification that the game has been started.
+      if (data.event === "start-game") {
+        setActualNums(["?", "?", "?", "?", "?", "?"]);
+        setButtonMessage("Inactive");
+        setActiveConfirm(false);
+        setGameState(data.state);
+        return;
+      }
+
+      //This triggers a new turn. Resets much of the UI
+      if (data.event === "new-turn") {
+        handleNewTurn(data);
+        return;
+      }
+
+      //This indicates that red team has submitted their hints.
+      if (data.event === "red-hints-in") {
+        setStatusMessage(
+          "Red has encoded their transmission. Waiting on Blue Encoder to complete encryption."
+        );
+        return;
+      }
+      //This indicates that blue team has submitted their hints.
+      if (data.event === "blue-hints-in") {
+        setStatusMessage(
+          "Blue has encoded their transmission. Waiting on Red Encoder to complete encryption."
+        );
+        return;
+      }
+
+      //This indicates that players are waiting for red to submit their guesses.
+      if (data.event === "wait-red-guess") {
+        setGameState(data.state);
+        if (myTeamRef.current === "blue") {
+          setActiveConfirm(false);
+          setButtonMessage("Please Wait");
+        }
+        setStatusMessage(
+          "Blue team has decoded the transmission... Waiting for red team to finalize their decryption"
+        );
+        return;
+      }
+      //This indicates that players are waiting for blue to submit their guesses.
+      if (data.event === "wait-blue-guess") {
+        setGameState(data.state);
+        if (myTeamRef.current === "red") {
+          setActiveConfirm(false);
+          setButtonMessage("Please Wait");
+        }
+        setStatusMessage(
+          "Red team has decoded the transmission... Waiting for blue team to finalize their decryption"
+        );
+        return;
+      }
+
+      //This indicates that its time for both teams to decrypt the secret codes.
+      if (data.event === "decryption") {
+        setActiveConfirm(false);
+        handleDecryption(data);
+        return;
+      }
+
+      //This event occurs when red team drops below 2 players.
+      if (data.event === "red-needs-players") {
+        setStatusMessage(
+          "Red team no longer has enough players. Hire more agents."
+        );
+        return;
+      }
+      //This event occurs when blue team drops below 2 players.
+      if (data.event === "blue-needs-players") {
+        setStatusMessage(
+          "Blue team no longer has enough players. Hire more agents."
+        );
+        return;
+      }
+
+      //This event contains score data, and ends the round.
+      if (data.event === "score-result") {
+        handleScoreResult(data);
+      }
+
+      //Game has ended, final score and winner is indicated.
+      if (data.event === "game-over") {
+        handleGameOver(data);
+        return;
+      }
+      //Essentially resets the game back to the initial state. People will need to re-join teams.
+      if (data.event === "reset-game") {
+        handleResetGame();
+      }
+    });
 
     //These events are player specific, and haven't been sent to other clients.
     socket.on("update-game-player", (data) => {
-
       //This event is the data / inforation for when joining a team. Contains all current game state info too.
       if (data.event === "team-info") {
         setMyTeam(data.team);
@@ -343,10 +337,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       if (data.event === "guess-data") {
         setShowGuesses(true);
         setGuessResults(data.guess);
-        if(myTeamRef.current === "red"){
-          setGuesses([data.guess,["-","-","-","-","-","-"]]);
+        if (myTeamRef.current === "red") {
+          setGuesses([data.guess, ["-", "-", "-", "-", "-", "-"]]);
         } else {
-          setGuesses([["-","-","-","-","-","-"],data.guess]);
+          setGuesses([["-", "-", "-", "-", "-", "-"], data.guess]);
         }
       }
     });
@@ -377,14 +371,13 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       return;
     };
   }, [socket]);
-  
+
   //Join team modal functionality
   useEffect(() => {
     if (myTeamRef.current === "") {
       setIsOpen(true);
     }
   }, [myTeam]);
-
 
   //When the round hits 5, print history.
   useEffect(() => {
@@ -397,7 +390,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       }
     }
   }, [gameState]);
-  
+
   //Score data requires transcription into a readable message. This function produces it, and returns the human readable scores.
   const parseScores = (data) => {
     let rs = "";
@@ -514,7 +507,6 @@ const EnigmaBreaker = ({ socket, playerName }) => {
     setGuesses(data.guesses);
   };
 
-
   //This sets UI elements to the state for end of round, and prints out end of round scores.
   const handleScoreResult = (data) => {
     setHistory({
@@ -557,7 +549,6 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       printHst(history.redHistory, "redType", false);
     }
   };
-
 
   //Prints history... printing variable is because this is a timed animation. Do not allow a new print event to start while one is already running.
   let printing = false;
@@ -607,7 +598,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       //Prints one line, then uses a timeout to wait for half a second before printing the next.
       const beginPrinting = (listLength, index, color) => {
         //Checks if there are more lines to be printed.
-        if (index < listLength ) {
+        if (index < listLength) {
           printLine(historyList[index], color);
           if (timeOutValue !== undefined) {
             clearTimeout(timeOutValue);
@@ -625,10 +616,8 @@ const EnigmaBreaker = ({ socket, playerName }) => {
     }
   };
 
-
   //Creates a line for the dot matrix printer sheet, and appends it to the list, before the last one. Thus pushing down the old ones.
   const printLine = (hstLine, color) => {
-
     //Nabs the printer, creates base elements that make up a line of printed text for history.
     const paper = document.querySelector("#printer .paper");
     const edge = document.createElement("div");
@@ -708,7 +697,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
     for (let i = 0; i < score[1]; i++) {
       text += miss;
     }
-    if(text === ""){
+    if (text === "") {
       text = "0";
     }
     return text;
@@ -768,7 +757,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
     if (gameStateRef.current === 5) {
       socket.emit("game-data", { event: "next-round" });
     }
-    if ((gameStateRef.current === 1 || gameStateRef.current === 2) && coderRef.current) {
+    if (
+      (gameStateRef.current === 1 || gameStateRef.current === 2) &&
+      coderRef.current
+    ) {
       //Handle submitting red hints
       if (myTeam === "red") {
         //Truncate hints to the maximum width for the field.
@@ -817,7 +809,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
     }
 
     //Submit your teams guesses
-    if ((gameStateRef.current === 3 || gameStateRef.current === 4) && !coderRef.current) {
+    if (
+      (gameStateRef.current === 3 || gameStateRef.current === 4) &&
+      !coderRef.current
+    ) {
       const redGuess = new Set([redOne, redTwo, redThree]);
       const blueGuess = new Set([blueOne, blueTwo, blueThree]);
       const allguess = [redOne, redTwo, redThree, blueOne, blueTwo, blueThree];
@@ -825,8 +820,12 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       //1: Each hint must have a unique number associated with it. That's what the set creation is about. If 3 are found, then we know each hint has a different number guessed.
       //2: First round you only guess on your own teams hints. In figure rounds you need to guess on both.
       if (
-        (myTeam === "blue" && currentRoundRef.current === 0 && blueGuess.size === 3) ||
-        (myTeam === "red" && currentRoundRef.current === 0 && redGuess.size === 3) ||
+        (myTeam === "blue" &&
+          currentRoundRef.current === 0 &&
+          blueGuess.size === 3) ||
+        (myTeam === "red" &&
+          currentRoundRef.current === 0 &&
+          redGuess.size === 3) ||
         (redGuess.size === 3 &&
           blueGuess.size === 3 &&
           redGuess.has("-") !== true &&
@@ -866,7 +865,7 @@ const EnigmaBreaker = ({ socket, playerName }) => {
 
   //This is what actually renders the element.
   return (
-    <div>
+    <div className="Enigma-Main">
       <audio id="print1" src={print1} crossOrigin="anonymous"></audio>
       <audio id="print2" src={print2} crossOrigin="anonymous"></audio>
       <audio id="print3" src={print3} crossOrigin="anonymous"></audio>
@@ -876,23 +875,25 @@ const EnigmaBreaker = ({ socket, playerName }) => {
       <audio id="print7" src={print7} crossOrigin="anonymous"></audio>
       <audio id="print8" src={print8} crossOrigin="anonymous"></audio>
 
-      <div className={`${myTeam}-screen-text float-left`}>
-        <button onClick={toggleSound}>
-          {soundToggle ? (
-            <VolumeUpIcon className="h-10 w-10" />
-          ) : (
-            <VolumeOffIcon className="h-10 w-10" />
-          )}
-        </button>
-      </div>
-      <div className={`${myTeam}-screen-text float-right`}>
-        <a
-          href="https://github.com/dwareb/PlaThyme/blob/main/client/src/Games/EnigmaBreaker/README.md"
-          target="_blank"
-          className="float-left"
-        >
-          <QuestionMarkCircleIcon className="h-10 w-10 float-right" />
-        </a>
+      <div className="float">
+        <div className={`${myTeam}-screen-text float-left`}>
+          <button onClick={toggleSound}>
+            {soundToggle ? (
+              <VolumeUpIcon className="h-10 w-10" />
+            ) : (
+              <VolumeOffIcon className="h-10 w-10" />
+            )}
+          </button>
+        </div>
+        <div className={`${myTeam}-screen-text float-right`}>
+          <a
+            href="https://github.com/dwareb/PlaThyme/blob/main/client/src/Games/EnigmaBreaker/README.md"
+            target="_blank"
+            className="float-left"
+          >
+            <QuestionMarkCircleIcon className="h-10 w-10" />
+          </a>
+        </div>
       </div>
       <div
         className={`${
@@ -1073,12 +1074,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                              {guesses[0][0]}
+                            {guesses[0][0]}
                           </span>
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                            {currentRound > 0
-                              ? guesses[1][0]
-                              : "-"}
+                            {currentRound > 0 ? guesses[1][0] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||
@@ -1096,12 +1095,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                              {guesses[0][1]}
+                            {guesses[0][1]}
                           </span>
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                            {currentRound > 0
-                              ? guesses[1][1]
-                              :"-"}
+                            {currentRound > 0 ? guesses[1][1] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||
@@ -1119,12 +1116,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                              {guesses[0][2]}
+                            {guesses[0][2]}
                           </span>
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                            {currentRound > 0
-                              ? guesses[1][2]
-                              :"-"}
+                            {currentRound > 0 ? guesses[1][2] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||
@@ -1320,7 +1315,9 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                         />
                       ) : (
                         <div className="blue-hint-box">
-                          {gameState > 2 ? hints[1][2] : "Awaiting Transmission"}
+                          {gameState > 2
+                            ? hints[1][2]
+                            : "Awaiting Transmission"}
                         </div>
                       )}
                     </div>
@@ -1328,12 +1325,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                              {guesses[1][3]}
+                            {guesses[1][3]}
                           </span>
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                            {currentRound > 0
-                              ? guesses[0][3]
-                              :"-"}
+                            {currentRound > 0 ? guesses[0][3] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||
@@ -1351,12 +1346,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                              {guesses[1][4]}
+                            {guesses[1][4]}
                           </span>
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                            {currentRound > 0
-                              ? guesses[0][4]
-                              :"-"}
+                            {currentRound > 0 ? guesses[0][4] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||
@@ -1374,12 +1367,10 @@ const EnigmaBreaker = ({ socket, playerName }) => {
                       {gameState > 4 || showGuesses ? (
                         <div className="">
                           <span className="blue-num-selector blue-screen-text blue-checked-selector">
-                              {guesses[1][5]}
+                            {guesses[1][5]}
                           </span>
                           <span className="red-num-selector red-screen-text red-checked-selector">
-                            {currentRound > 0
-                              ? guesses[0][5]
-                              :"-"}
+                            {currentRound > 0 ? guesses[0][5] : "-"}
                           </span>
                         </div>
                       ) : (currentRound > 0 ||

@@ -11,7 +11,7 @@ import Amplitude from './Games/Amplitude/Amplitude';
 
 import './App.css';
 
-const SERVER = "https://enigmabreaker.herokuapp.com/";
+const SERVER = "localhost:3001";
 let socket = io(SERVER)
 
 export default function App() {

@@ -1,6 +1,5 @@
 const Game = require("../Game");
 
-class EnigmaBreaker extends Game {
-  constructor() {
-  }
+class Amplitude extends Game {
 }
+module.exports = Amplitude;

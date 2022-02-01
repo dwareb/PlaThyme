@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 const http = require("http").createServer(app);
 const EnigmaBreaker = require("./Games/EnigmaBreaker/EnigmaBreaker");
+const Amplitude = require("./Games/Amplitude/Amplitude");
 const { makeid } = require("./makeid");
 const {
   joinRoom,
@@ -100,7 +101,8 @@ io.on("connection", (socket) => {
           data.minPlayers
         );
         break;
-
+      case 2: //Amplitude
+        games[roomCode] = new Amplitude();
       default:
         break;
     }
@@ -155,23 +157,6 @@ io.on("connection", (socket) => {
         games[data.roomCode].newPlayer(data.name);
         socket.emit("gameData", gameData);
         socket.join(data.roomCode);
-
-        //Notify the game object that a new player has joined.
-        // Test: enter wrong room code; got error. (add checks)
-        // switch(gid){
-        //   case 3: // UKnowIt
-        //     if(games[data.roomCode].players.length === games[data.roomCode].minPlayers){
-        //         games[data.roomCode].startGame();
-        //       }
-        //       else {
-        //         // send an error event indicating thta current room is full and redireect them to home page agin.
-        //         io.to(userId).emit("GameRoomFullAlert");
-        //       }
-        //   break;
-
-        //   default:
-        //     break;
-        // }
 
         //Send all players updated user list.
         io.to(data.roomCode).emit("userData", getUsersInRoom(data.roomCode));

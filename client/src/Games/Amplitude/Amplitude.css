@@ -1,0 +1,89 @@
+.amp-main{
+    display: grid;
+    overflow:auto;
+    justify-content: center;
+    align-content: center;
+    grid-template-columns: 100%;
+    grid-template-rows: 20% 50% 30%;
+    background-color: rgb(10, 40, 40);
+    height: 100%;
+    width: 100%;
+}
+.amp-container{
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    overflow:auto;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+    height: 100%;
+    width: 100%;
+}
+.amp-top{
+    background-color: green;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    overflow:auto;
+    grid-template-columns: 100%;
+    grid-template-rows: 70% 30%;
+}
+
+.amp-mid{
+    background-color: red;
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    overflow:auto;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+}
+
+.amp-bot{
+    background-color: blue;
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    overflow:auto;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+}
+
+.amp-title{
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    overflow:auto;
+}
+
+.amp-scores{
+    background-color: orange;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 50% 50%;
+}
+
+.yellow-score{
+    background-color: yellow;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    justify-content: left;
+    align-content: center;
+}
+
+.purple-score{
+    background-color: purple;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    justify-content: right;
+    align-content: center;
+}

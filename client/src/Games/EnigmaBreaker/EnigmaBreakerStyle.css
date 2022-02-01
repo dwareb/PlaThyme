@@ -1,3 +1,10 @@
+.Enigma-Main{
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  overflow:auto;
+}
+
 .enigma-grid {
   display: grid;
   /* font-family: pixel; */

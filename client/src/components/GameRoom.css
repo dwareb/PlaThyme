@@ -15,7 +15,6 @@
     overflow:auto;
 }
 
-
 .game-window{
     display: grid;
     justify-content: center;
@@ -23,6 +22,8 @@
     height: 100%;
     width: 100%;
     overflow:auto;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
 }
 
 .player-list{
